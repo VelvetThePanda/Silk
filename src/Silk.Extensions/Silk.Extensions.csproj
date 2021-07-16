@@ -2,15 +2,8 @@
 
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
-        <RootNamespace>Silk.Extensions</RootNamespace>
-        <AssemblyName>Silk.Extensions</AssemblyName>
-        <LangVersion>9</LangVersion>
         <Nullable>enable</Nullable>
     </PropertyGroup>
-
-    <ItemGroup>
-        <Compile Remove="TestExtension.cs" />
-    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="DSharpPlus" Version="4.1.0-nightly-00917" />

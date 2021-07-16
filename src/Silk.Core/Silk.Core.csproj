@@ -13,32 +13,19 @@
 
     <PropertyGroup>
         <Authors>VelvetThePanda, CalebABG97, NatsumiHB</Authors>
-        <Company>The Silk Devs Team</Company>
+        <Company>The Silk Dev Team</Company>
         <PackageProjectUrl>https://github.com/VelvetThePanda/Silk</PackageProjectUrl>
         <UserSecretsId>VelvetThePanda-SilkBot</UserSecretsId>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
         <Optimize>false</Optimize>
         <WarningLevel>2</WarningLevel>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
         <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     </PropertyGroup>
-
-    <ItemGroup>
-        <EmbeddedResource Remove="config\**" />
-        <EmbeddedResource Remove="Migrations\**" />
-        <EmbeddedResource Remove="Silk!\**" />
-        <EmbeddedResource Remove="logs\**" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Remove="docker-compose.yml" />
-        <None Remove="Silk!\**" />
-        <None Remove="logs\**" />
-    </ItemGroup>
 
     <ItemGroup>
         <Content Include="appSettings.json" CopyToOutputDirectory="Always" />
@@ -96,18 +83,6 @@
         <ProjectReference Include="..\Silk.Core.Data\Silk.Core.Data.csproj" />
         <ProjectReference Include="..\Silk.Extensions\Silk.Extensions.csproj" />
         <ProjectReference Include="..\Silk.Shared\Silk.Shared.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Compile Remove="Silk!\**" />
-        <Compile Remove="Commands\General\TicketCommand.cs" />
-        <Compile Remove="Commands\General\StatusCommand.cs" />
-        <Compile Remove="Commands\Bot\PrefixValidationResult.cs" />
-        <Compile Remove="Commands\General\DMCommand.cs" />
-        <Compile Remove="Utilities\CommandHelper.cs" />
-        <Compile Remove="Commands\Bot\GuildJoinHandler.cs" />
-        <Compile Remove="Commands\Bot\Restart.cs" />
-        <Compile Remove="logs\**" />
     </ItemGroup>
 
 </Project>
