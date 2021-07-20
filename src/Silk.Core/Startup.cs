@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using DSharpPlus;
 using MediatR;
@@ -35,6 +36,7 @@ using Silk.Extensions;
 using Silk.Shared;
 using Silk.Shared.Configuration;
 using Silk.Shared.Constants;
+using YoutubeExplode;
 
 namespace Silk.Core
 {
@@ -150,6 +152,12 @@ namespace Silk.Core
                 services.AddSingleton<GuildEventHandler>();
 
                 #region Services
+
+                #region Music
+                // I have no idea if it's safe to pull HttpClient from the container. Oh well. //
+                services.AddSingleton(s => new YoutubeClient(s.Get<HttpClient>()!));
+
+                #endregion
                 
                 services.AddSingleton<ConfigService>();
                 services.AddSingleton<MemberGreetingService>();

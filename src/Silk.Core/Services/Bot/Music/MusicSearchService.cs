@@ -12,6 +12,8 @@ using Silk.Extensions.DSharpPlus;
 using YoutubeExplode;
 using YoutubeExplode.Common;
 using YoutubeExplode.Search;
+using YoutubeExplode.Videos;
+using YoutubeExplode.Videos.Streams;
 
 namespace Silk.Core.Services.Bot.Music
 {
@@ -42,16 +44,23 @@ namespace Silk.Core.Services.Bot.Music
 		/// <summary>
 		/// Gets a Video from <a href="https://youtube.com/"/>.
 		/// </summary>
-		/// <param name="url"></param>
-		/// <param name="requester"></param>
-		/// <returns></returns>
+		/// <param name="url">The URL of the video to get.</param>
+		/// <param name="requester">The user that requested the video.</param>
+		/// <returns>The requested video, wrapped as <see cref="SilkMusicResult"/>.</returns>
 		public async Task<SilkMusicResult> GetVideoFromLinkAsync(string url, DiscordUser requester)
 		{
-			return default!;
+			var video = await _ytClient.Videos.GetAsync(VideoId.Parse(url));
+			var videoManifest = await _ytClient.Videos.Streams.GetManifestAsync(video.Id);
+		
+			var videoStream = videoManifest.GetAudioStreams().GetWithHighestBitrate();
+
+			var stream = await _ytClient.Videos.Streams.GetAsync(videoStream);
+			
+			return new() {RequestedBy = requester, Duration = video.Duration.Value, AudioStream = stream};
 		}
 		
 		/// <summary>
-		/// Waits for a user to make a selection based on the 
+		/// Waits for a user to make a selection based on the available selection.
 		/// </summary>
 		/// <param name="guild">The guild this search was performed on.</param>
 		/// <param name="channel">The channel this search was performeed in.</param>
@@ -70,14 +79,14 @@ namespace Silk.Core.Services.Bot.Music
 			var message = await interactivity.WaitForMessageAsync(m => m.Author == user &&
 			                                                           int.TryParse(m.Content, out int select) && select < 1 && select >= results.Count);
 
-			if (message.TimedOut)
-				return null;
-			else
+			if (!message.TimedOut)
 			{
 				var index = int.Parse(message.Result.Content);
-				var result = results[index - 1];
-				//TODO: Probably change out Video with a stream for VNext? 
-				return new() {RequestedBy = user, Duration = result.Duration.Value, Video = result};
+				return await GetVideoFromLinkAsync(results[index - 1].Url, user);
+			}
+			else
+			{
+				return null;
 			}
 		}
 

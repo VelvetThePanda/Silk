@@ -1,6 +1,6 @@
 ﻿using System;
+using System.IO;
 using DSharpPlus.Entities;
-using YoutubeExplode.Search;
 
 namespace Silk.Core.Services.Bot.Music
 {
@@ -9,6 +9,6 @@ namespace Silk.Core.Services.Bot.Music
 		public DiscordUser RequestedBy { get; init; }
 		public TimeSpan Duration { get; init; }
 		
-		public VideoSearchResult Video { get; init; }
+		public Stream AudioStream { get; init; }
 	}
 }
