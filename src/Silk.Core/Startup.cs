@@ -108,7 +108,8 @@ namespace Silk.Core
                         .MinimumLevel.Override("Microsoft", LogEventLevel.Error)
                         .MinimumLevel.Override("DSharpPlus", LogEventLevel.Fatal);
 
-                    Log.Logger = builder.Configuration["LogLevel"] switch
+                    var configOptions = builder.Configuration.GetSilkConfigurationOptionsFromSection();
+                    Log.Logger = configOptions.LogLevel switch
                     {
                         "All" => logger.MinimumLevel.Verbose().CreateLogger(),
                         "Info" => logger.MinimumLevel.Information().CreateLogger(),
@@ -127,9 +128,9 @@ namespace Silk.Core
         {
             return builder.ConfigureServices((context, services) =>
             {
-                IConfiguration? config = context.Configuration;
-                var silkConfig = config.GetSection(SilkConfigurationOptions.SectionKey).Get<SilkConfigurationOptions>();
-                AddSilkConfigurationOptions(services, config);
+                var silkConfig = context.Configuration.GetSilkConfigurationOptionsFromSection();
+                
+                AddSilkConfigurationOptions(services, context.Configuration);
                 AddDatabases(services, silkConfig.Persistence);
                 
                 if (!addServices) return;
@@ -184,9 +185,6 @@ namespace Silk.Core
 
                 services.AddSingleton<TagService>();
                 services.AddSingleton<RoleMenuReactionService>();
-                
-
-                //services.AddSingleton<IMessageSender, MessageSenderService>();
 
                 services.AddSingleton<Main>();
                 services.AddHostedService(s => s.GetRequiredService<Main>());
@@ -243,6 +241,20 @@ namespace Silk.Core
             
             services.AddDbContext<GuildContext>(Builder, ServiceLifetime.Transient);
             services.AddDbContextFactory<GuildContext>(Builder, ServiceLifetime.Transient);
+        }
+    }
+    
+    /* Todo: Move this class maybe? */
+    public static class IConfigurationExtensions
+    {
+        /// <summary>
+        /// An extension method to get a <see cref="SilkConfigurationOptions"/> instance from the Configuration by Section Key
+        /// </summary>
+        /// <param name="config">the configuration</param>
+        /// <returns>an instance of the SilkConfigurationOptions class, or null if not found</returns>
+        public static SilkConfigurationOptions GetSilkConfigurationOptionsFromSection(this IConfiguration config)
+        {
+            return config.GetSection(SilkConfigurationOptions.SectionKey).Get<SilkConfigurationOptions>();
         }
     }
 }
