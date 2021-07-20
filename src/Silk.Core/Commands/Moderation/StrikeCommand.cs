@@ -79,7 +79,7 @@ namespace Silk.Core.Commands.Moderation
 					new DiscordButtonComponent(ButtonStyle.Danger, $"do_not_escalate_{ctx.Message.Id}", "Do not escalate", emoji: new(834860005584666644)));
 
 			var msg = await ctx.RespondAsync(builder);
-			var res = await interactivity.WaitForButtonAsync(msg, ctx.User);
+			var res = await interactivity.WaitForButtonAsync(msg, ctx.User, token: null);
 
 			if (res.TimedOut)
 				return (false, default);

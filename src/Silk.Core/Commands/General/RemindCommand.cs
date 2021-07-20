@@ -162,7 +162,7 @@ namespace Silk.Core.Commands.General
                                 .WithDescription(reminder)
                                 .WithFooter($"Silk! | Requested by {ctx.User.Id}")))
                         .ToList();
-                    await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages);
+                    await interactivity.SendPaginatedMessageAsync(ctx.Channel, ctx.User, pages, timeoutoverride: null);
                 }
             }
         }
