@@ -229,11 +229,11 @@ namespace Silk.Core
             services.Configure<SilkConfigurationOptions>(silkConfigurationSection);
         }
         
-        private static void AddDatabases(IServiceCollection services, SilkPersistenceOptions connectionString)
+        private static void AddDatabases(IServiceCollection services, SilkPersistenceOptions persistenceOptions)
         {
             void Builder(DbContextOptionsBuilder b)
             {
-                b.UseNpgsql(connectionString.ToString());
+                b.UseNpgsql(persistenceOptions.GetConnectionString());
                 #if DEBUG
                 b.EnableSensitiveDataLogging();
                 b.EnableDetailedErrors();
