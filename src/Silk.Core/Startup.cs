@@ -8,6 +8,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -239,8 +240,9 @@ namespace Silk.Core
                 #endif // EFCore will complain about enabling sensitive data if you're not in a debug build. //
             }
             
-            services.AddDbContext<GuildContext>(Builder, ServiceLifetime.Transient);
+            // services.AddDbContext<GuildContext>(Builder, ServiceLifetime.Transient);
             services.AddDbContextFactory<GuildContext>(Builder, ServiceLifetime.Transient);
+            services.TryAdd(new ServiceDescriptor(typeof(GuildContext), p => p.GetRequiredService<IDbContextFactory<GuildContext>>().CreateDbContext(), ServiceLifetime.Transient));
         }
     }
     
