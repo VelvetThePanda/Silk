@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Extensions.Http;
+using Microsoft.Extensions.Http.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace Silk.Core.Utilities.HttpClient
@@ -30,8 +31,7 @@ namespace Silk.Core.Utilities.HttpClient
                 // Run other configuration first, we want to decorate.
                 next(builder);
 
-                ILogger? outerLogger =
-                    _loggerFactory.CreateLogger($"System.Net.Http.HttpClient.{builder.Name}.LogicalHandler");
+                ILogger? outerLogger = _loggerFactory.CreateLogger($"System.Net.Http.HttpClient.{builder.Name}.LogicalHandler");
 
                 builder.AdditionalHandlers.Insert(0, new CustomLoggingScopeHttpMessageHandler(outerLogger));
             };
