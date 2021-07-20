@@ -23,7 +23,7 @@ namespace Silk.Core.Utilities
             MemberGreetingService memberGreetingService,
             RoleAddedHandler staffCheck,
             RoleMenuReactionService roleMenu,
-            GuildEventHandlers guildHandlers,
+            GuildEventHandler guildHandler,
             MemberRemovedHandler memberRemovedHandler,
             ButtonHandlerService buttonHandler, 
             AutoModMuteApplier _)
@@ -41,9 +41,9 @@ namespace Silk.Core.Utilities
             client.MessageReactionRemoved += roleMenu.OnRemove;
 
 
-            client.GuildCreated += guildHandlers.OnGuildJoin;
-            client.GuildAvailable += guildHandlers.OnGuildAvailable;
-            client.GuildDownloadCompleted += guildHandlers.OnGuildDownload;
+            client.GuildCreated += guildHandler.OnGuildJoin;
+            client.GuildAvailable += guildHandler.OnGuildAvailable;
+            client.GuildDownloadCompleted += guildHandler.OnGuildDownload;
 
             client.ComponentInteractionCreated += buttonHandler.OnButtonPress;
 

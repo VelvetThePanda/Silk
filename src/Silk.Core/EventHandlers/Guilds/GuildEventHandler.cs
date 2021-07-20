@@ -4,10 +4,10 @@ using DSharpPlus.EventArgs;
 
 namespace Silk.Core.EventHandlers.Guilds
 {
-    public sealed class GuildEventHandlers
+    public sealed class GuildEventHandler
     {
         private readonly GuildEventHandlerService _guildHandler;
-        public GuildEventHandlers(GuildEventHandlerService guildHandler) => _guildHandler = guildHandler;
+        public GuildEventHandler(GuildEventHandlerService guildHandler) => _guildHandler = guildHandler;
 
         public async Task OnGuildJoin(DiscordClient client, GuildCreateEventArgs args) =>
             _guildHandler.CacheQueue.Enqueue(() =>_guildHandler.JoinedGuild(args));

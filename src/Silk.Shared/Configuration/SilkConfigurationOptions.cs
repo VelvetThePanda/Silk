@@ -40,6 +40,11 @@ namespace Silk.Shared.Configuration
         public bool SelfHosted { get; set; }
 
         /// <summary>
+        /// Property for controlling the level of Logging
+        /// </summary>
+        public string LogLevel { get; set; } = "Info";
+
+        /// <summary>
         /// Property for holding Persistence options (property name matching sub-key property in configuration file)
         /// </summary>
         public SilkPersistenceOptions Persistence { get; set; }

@@ -54,8 +54,6 @@ namespace Silk.Core.EventHandlers.Messages
 
             CommandContext context = commandsNext.CreateContext(args.Message, prefix, command, arguments);
 
-
-
             _ = Task.Run(async () => await commandsNext.ExecuteCommandAsync(context));
         }
 
