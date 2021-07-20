@@ -78,6 +78,7 @@
         <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="6.0.0-preview.2.21154.6" />
         <PackageReference Include="System.Drawing.Common" Version="6.0.0-preview.2.21154.6" />
         <PackageReference Include="YoutubeExplode" Version="6.0.4" />
+        <PackageReference Include="YoutubeExplode.Converter" Version="2.1.0" />
     </ItemGroup>
 
     <ItemGroup>
