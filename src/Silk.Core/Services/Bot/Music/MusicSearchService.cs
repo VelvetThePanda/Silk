@@ -10,13 +10,13 @@ using DSharpPlus.Interactivity.Extensions;
 using Silk.Extensions;
 using Silk.Extensions.DSharpPlus;
 using YoutubeExplode;
-using YoutubeExplode.Common;
 using YoutubeExplode.Search;
 using YoutubeExplode.Videos;
 using YoutubeExplode.Videos.Streams;
 
 namespace Silk.Core.Services.Bot.Music
 {
+	//TODO: Playlist support.
 	public sealed class MusicSearchService
 	{
 		private readonly YoutubeClient _ytClient;
@@ -26,19 +26,29 @@ namespace Silk.Core.Services.Bot.Music
 			_ytClient = ytClient;
 			_dcClient = dcClient;
 		}
-		
+
 		/// <summary>
 		/// Searches <a href="https://youtube.com/"/> for videos, returning the first 10 results.
 		/// </summary>
 		/// <param name="query">The query to pass.</param>
 		/// <param name="token">A cancellation token to cancel the </param>
 		/// <returns></returns>
-		public async IAsyncEnumerable<VideoSearchResult> SearchYouTubeAsync(string query, CancellationToken token = default)
+		public async Task<VideoSearchResult[]> SearchYouTubeAsync(string query)
 		{
-			var results = await _ytClient.Search.GetVideosAsync(query, token);
-			
-			for (int i = 0; i < Math.Min(results.Count, 10); i++)
-				yield return results[i];
+			var tcs = new CancellationTokenSource();
+			var results = Array.Empty<VideoSearchResult>();
+			var ytResult = _ytClient.Search.GetResultBatchesAsync(query, tcs.Token);
+			try
+			{
+				await foreach (var res in ytResult.WithCancellation(tcs.Token))
+				{
+					tcs.Cancel(); // Will cancel enumeration. //
+					results = res.Items.Take(10).Cast<VideoSearchResult>().ToArray();
+				}
+			}
+			catch (TaskCanceledException) { } // I know //
+
+			return results;
 		}
 
 		/// <summary>
@@ -56,7 +66,7 @@ namespace Silk.Core.Services.Bot.Music
 
 			var stream = await _ytClient.Videos.Streams.GetAsync(videoStream);
 			
-			return new() {RequestedBy = requester, Duration = video.Duration.Value, AudioStream = stream};
+			return new() {Video = video, RequestedBy = requester, Duration = video.Duration.Value, AudioStream = stream};
 		}
 		
 		/// <summary>
@@ -72,12 +82,12 @@ namespace Silk.Core.Services.Bot.Music
 			var interactivity = _dcClient.GetShard(guild).GetInteractivity();
 			var token = new CancellationTokenSource(TimeSpan.FromSeconds(45));
 			
-			//I'm sorry for the pauses; people keep messaging me. //
 			var pages = GeneratePagesFromSearch(results, user);
-			await interactivity.SendPaginatedMessageAsync(channel, user, pages, token: token.Token);
+			// We don't want to block, we care about input! //
+			_ = interactivity.SendPaginatedMessageAsync(channel, user, pages, token: token.Token);
 
 			var message = await interactivity.WaitForMessageAsync(m => m.Author == user &&
-			                                                           int.TryParse(m.Content, out int select) && select < 1 && select >= results.Count);
+			                                                           int.TryParse(m.Content, out int select) && select > 0 && select <= results.Count);
 
 			if (!message.TimedOut)
 			{
@@ -89,7 +99,6 @@ namespace Silk.Core.Services.Bot.Music
 				return null;
 			}
 		}
-
 		
 		/// <summary>
 		/// Generates two (2) <see cref="Page"/>s for use in Interactivity based on the provided set of <see cref="VideoSearchResult"/>.
@@ -100,7 +109,7 @@ namespace Silk.Core.Services.Bot.Music
 		private IEnumerable<Page> GeneratePagesFromSearch(IReadOnlyList<VideoSearchResult> results, DiscordUser user)
 		{
 			var pageOneResults = results.Take(5)
-				.Select((r, i) => $"{i + 1}: {r.Title} by {r.Author.Title}\n\tDuration: `{r.Duration.Value:H:mm:ss}`");
+				.Select((r, i) => $"{i + 1}: **{r.Title}** by {r.Author.Title}\n\tDuration: `{r.Duration.Value:h\\:mm\\:ss}`");
 			var page1 = new DiscordEmbedBuilder()
 				.WithAuthor(user.Username, user.GetUrl(), user.AvatarUrl)
 				.WithColor(DiscordColor.Azure)
@@ -115,7 +124,7 @@ namespace Silk.Core.Services.Bot.Music
 			{
 				// +6 to account for the fact that we're skipping 5 results.
 				var pageTwoResults = results.Skip(5)
-					.Select((r, i) => $"{i + 6}: {r.Title} by {r.Author.Title}\n\tDuration: `{r.Duration.Value:H:mm:ss}`");
+					.Select((r, i) => $"{i + 6}: **{r.Title}** by {r.Author.Title}\n\tDuration: `{r.Duration.Value:h\\:mm\\:ss}`");
 
 				var page2 = new DiscordEmbedBuilder(page1.Build()).WithDescription(pageTwoResults.Join("\n"));
 
