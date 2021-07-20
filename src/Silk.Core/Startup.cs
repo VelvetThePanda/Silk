@@ -27,6 +27,7 @@ using Silk.Core.EventHandlers.Messages;
 using Silk.Core.EventHandlers.Messages.AutoMod;
 using Silk.Core.EventHandlers.Reactions;
 using Silk.Core.Services.Bot;
+using Silk.Core.Services.Bot.Music;
 using Silk.Core.Services.Data;
 using Silk.Core.Services.Interfaces;
 using Silk.Core.Services.Server;
@@ -160,9 +161,11 @@ namespace Silk.Core
                 #region Services
 
                 #region Music
+                
                 // I have no idea if it's safe to pull HttpClient from the container. Oh well. //
                 services.AddSingleton(s => new YoutubeClient(s.Get<HttpClient>()!));
-
+                services.AddSingleton<MusicSearchService>();
+                services.AddSingleton<MusicVoiceService>();
                 #endregion
                 
                 services.AddSingleton<ConfigService>();
