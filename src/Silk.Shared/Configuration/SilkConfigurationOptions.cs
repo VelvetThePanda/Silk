@@ -45,6 +45,11 @@ namespace Silk.Shared.Configuration
         public string LogLevel { get; set; } = "Info";
 
         /// <summary>
+        /// Property for holding GuildId's for configuring which Guilds you want to add Music commands to
+        /// </summary>
+        public List<int> PrivateMusic { get; set; }
+
+        /// <summary>
         /// Property for holding Persistence options (property name matching sub-key property in configuration file)
         /// </summary>
         public SilkPersistenceOptions Persistence { get; set; }
