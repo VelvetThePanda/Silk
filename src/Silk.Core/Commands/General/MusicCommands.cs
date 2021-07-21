@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
+using DSharpPlus.VoiceNext;
 using Silk.Core.Services.Bot.Music;
 using Silk.Core.Utilities.HelpFormatter;
 
@@ -19,16 +20,12 @@ namespace Silk.Core.Commands.General
 		//Here's to hoping that it doesn't all break...
 		[Command]
 		[RequireGuild]
-		//[RequireDJ]
-		public async Task SearchYTAsync(CommandContext ctx, string query)
+		//[RequireMusicGuild]
+		public async Task Play(CommandContext ctx, string path)
 		{
-			var results = await _search.SearchYouTubeAsync(query);
-			var result = await _search.GetSelectionResultAsync(ctx.Guild, ctx.Channel, ctx.User, results);
-
-			if (result is null)
-				await ctx.RespondAsync("You took too long! :(");
-			else
-				await ctx.RespondAsync($"You picked {result.Video.Title} by {result.Video.Author.Title}");
+			var vnext = ctx.Client.GetVoiceNext();
+			var connect = await vnext.ConnectAsync(ctx.Member.VoiceState.Channel);
+			var file = 
 		}
 
 		[Command]
