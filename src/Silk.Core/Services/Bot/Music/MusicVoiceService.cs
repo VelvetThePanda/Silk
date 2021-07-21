@@ -1,11 +1,8 @@
 ﻿using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
-using DSharpPlus;
-using DSharpPlus.Entities;
 using DSharpPlus.VoiceNext;
 using Microsoft.Extensions.Hosting;
-using Silk.Extensions.DSharpPlus;
 
 namespace Silk.Core.Services.Bot.Music
 {
@@ -14,65 +11,12 @@ namespace Silk.Core.Services.Bot.Music
 	/// </summary>
 	public sealed class MusicVoiceService : IHostedService
 	{
-		private readonly ConcurrentDictionary<ulong, SilkMusicQueue> _queues = new();
+		private readonly ConcurrentDictionary<ulong, VoiceNextConnection> _vcConnections;
+		private readonly ConcurrentDictionary<ulong, SilkMusicQueue> _queues;
+		public async Task Play() { }
+
+
 		public async Task StartAsync(CancellationToken cancellationToken) { }
 		public async Task StopAsync(CancellationToken cancellationToken) { }
-
-		public async Task<string> JoinAsync(ulong guildId, DiscordChannel? channel)
-		{
-			if (channel?.Type is not ChannelType.Voice or ChannelType.Stage)
-				return "Cannot join non-voice-based channel.";
-			
-			var semaphore = GetOrCreateSemaphoreForGuild(guildId);
-			await semaphore.WaitAsync();
-			try
-			{
-				VoiceNextExtension vnext = channel.GetClient().GetVoiceNext();
-				
-				if (_queues.TryGetValue(guildId, out var vnextConnection) && vnextConnection.Connection?.TargetChannel == channel)
-				{
-					return "I'm already in this channel!";
-				}
-				else
-				{
-					VoiceNextConnection? connection = vnext.GetConnection(channel.Guild);
-					
-					if (connection is not null)	
-						connection.Disconnect();
-					
-					_queues[guildId] = new() {Connection = await vnext.ConnectAsync(channel)};
-					return $"Joined {channel.Mention}!";
-				}
-			}
-			finally
-			{
-				semaphore.Release();
-			}
-		}
-
-		public async Task Play(SilkMusicResult res, ulong guildId)
-		{
-			var queue = _queues[guildId];
-			queue.Add(res);
-			await queue.Play();
-		}
-
-		public async Task Resume(ulong guildId)
-		{
-		}
-		
-		public async Task Stop() { }
-		public void Pause(ulong guildId) => _queues[guildId].Connection!.Pause();
-		public async Task Repeat() { }
-		public async Task Shuffle() { }
-
-
-		private SemaphoreSlim GetOrCreateSemaphoreForGuild(ulong guildId)
-		{
-			if (!_queues.TryGetValue(guildId, out var queue))
-				queue = _queues[guildId] = new();
-
-			return queue.Semaphore;
-		}
 	}
 }

@@ -62,8 +62,9 @@ namespace Silk.Core.Services.Bot.Music
 			var videoManifest = await _ytClient.Videos.Streams.GetManifestAsync(video.Id);
 		
 			var audioStream = videoManifest.GetAudioOnlyStreams().FirstOrDefault(b => b.AudioCodec == "opus")!;
+			var stream = await _ytClient.Videos.Streams.GetAsync(audioStream);
 			
-			return new() {Video = video, RequestedBy = requester, Duration = video.Duration.Value, AudioUrl = audioStream.Url};
+			return new() {Video = video, RequestedBy = requester, Duration = video.Duration.Value, AudioStream = stream, AudioUrl = audioStream.Url};
 		}
 		
 		/// <summary>
