@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using DSharpPlus;
@@ -15,29 +14,34 @@ namespace Silk.Core.Services.Bot.Music
 	/// </summary>
 	public sealed class MusicVoiceService : IHostedService
 	{
-		private readonly ConcurrentDictionary<ulong, SilkMusicQueue> _queues;
+		private readonly ConcurrentDictionary<ulong, SilkMusicQueue> _queues = new();
 		public async Task StartAsync(CancellationToken cancellationToken) { }
 		public async Task StopAsync(CancellationToken cancellationToken) { }
 
-		public async Task<bool> Join(ulong guildId, DiscordChannel? channel)
+		public async Task<string> JoinAsync(ulong guildId, DiscordChannel? channel)
 		{
 			if (channel?.Type is not ChannelType.Voice or ChannelType.Stage)
-				throw new InvalidOperationException("Cannot join non-voice-based channel.");
-
+				return "Cannot join non-voice-based channel.";
+			
 			var semaphore = GetOrCreateSemaphoreForGuild(guildId);
 			await semaphore.WaitAsync();
 			try
 			{
-				var vnext = channel.GetClient().GetVoiceNext();
-
+				VoiceNextExtension vnext = channel.GetClient().GetVoiceNext();
+				
 				if (_queues.TryGetValue(guildId, out var vnextConnection) && vnextConnection.Connection?.TargetChannel == channel)
 				{
-					return false;
+					return "I'm already in this channel!";
 				}
 				else
 				{
+					VoiceNextConnection? connection = vnext.GetConnection(channel.Guild);
+					
+					if (connection is not null)	
+						connection.Disconnect();
+					
 					_queues[guildId] = new() {Connection = await vnext.ConnectAsync(channel)};
-					return true;
+					return $"Joined {channel.Mention}!";
 				}
 			}
 			finally
@@ -46,9 +50,20 @@ namespace Silk.Core.Services.Bot.Music
 			}
 		}
 
-		public async Task Play(SilkMusicResult res)
+		public async void Play(SilkMusicResult res, ulong guildId)
 		{
+			var queue = _queues[guildId];
+			var sink = queue.Connection!;
+			queue.Add(res);
+			
+			if (!sink.IsPlaying)
+			{
 				
+			}
+		}
+
+		public async Task Resume(ulong guildId)
+		{
 		}
 		
 		public async Task Stop() { }

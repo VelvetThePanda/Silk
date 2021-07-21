@@ -22,6 +22,18 @@ namespace Silk.Core.Services.Bot.Music
 		public SemaphoreSlim Semaphore { get; } = new(1);
 		private readonly ConcurrentQueue<SilkMusicResult> _queue = new();
 
+		public async void Play()
+		{
+			if (_nowPlaying is null)
+				await GetNextAsync();
+			
+			if (_nowPlaying is null)
+				throw new InvalidOperationException("Nothing to play.");
+
+			var vnextSink = _connection!.GetTransmitSink();
+
+			await _nowPlaying.AudioStream.CopyToAsync(vnextSink);
+		}
 		
 		public void Add(SilkMusicResult music) => _queue.Enqueue(music);
 

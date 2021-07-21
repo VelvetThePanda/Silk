@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using DSharpPlus.CommandsNext;
 using DSharpPlus.CommandsNext.Attributes;
 using Silk.Core.Services.Bot.Music;
@@ -36,16 +35,9 @@ namespace Silk.Core.Commands.General
 		[RequireGuild]
 		public async Task JoinAsync(CommandContext ctx)
 		{
-			try
-			{
-				var valid = await _voice.Join(ctx.Guild.Id, ctx.Member.VoiceState?.Channel);
+			var message = await _voice.JoinAsync(ctx.Guild.Id, ctx.Member.VoiceState?.Channel);
 
-				await ctx.RespondAsync(valid ? "👍🏽" :"👎🏽");
-			}
-			catch (InvalidOperationException invOp)
-			{
-				await ctx.RespondAsync(invOp.Message);
-			}
+			await ctx.RespondAsync(message);
 		}
 	}
 }
