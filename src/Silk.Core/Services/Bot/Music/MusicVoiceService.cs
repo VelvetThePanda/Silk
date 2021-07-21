@@ -50,16 +50,11 @@ namespace Silk.Core.Services.Bot.Music
 			}
 		}
 
-		public async void Play(SilkMusicResult res, ulong guildId)
+		public async Task Play(SilkMusicResult res, ulong guildId)
 		{
 			var queue = _queues[guildId];
-			var sink = queue.Connection!;
 			queue.Add(res);
-			
-			if (!sink.IsPlaying)
-			{
-				
-			}
+			await queue.Play();
 		}
 
 		public async Task Resume(ulong guildId)
@@ -67,7 +62,7 @@ namespace Silk.Core.Services.Bot.Music
 		}
 		
 		public async Task Stop() { }
-		public async Task Pause() { }
+		public void Pause(ulong guildId) => _queues[guildId].Connection!.Pause();
 		public async Task Repeat() { }
 		public async Task Shuffle() { }
 

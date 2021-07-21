@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using DSharpPlus.VoiceNext;
@@ -22,7 +23,25 @@ namespace Silk.Core.Services.Bot.Music
 		public SemaphoreSlim Semaphore { get; } = new(1);
 		private readonly ConcurrentQueue<SilkMusicResult> _queue = new();
 
-		public async void Play()
+		private Process _ffmpeg;
+
+
+		private void StartFFMPeg()
+		{
+			_ffmpeg?.Kill();
+			_ffmpeg = Process.Start(new ProcessStartInfo()
+			{
+				FileName = "./ffmpeg.exe",
+				RedirectStandardOutput = true,
+				RedirectStandardInput = true,
+				UseShellExecute = false,
+				CreateNoWindow = true,
+				Arguments = "-i - -f mp3 -ac 2 -f s16le -ar 48000 pipe:1"
+			})!;
+			_ffmpeg.Start();
+		}
+		
+		public async Task Play()
 		{
 			if (_nowPlaying is null)
 				await GetNextAsync();
@@ -31,8 +50,10 @@ namespace Silk.Core.Services.Bot.Music
 				throw new InvalidOperationException("Nothing to play.");
 
 			var vnextSink = _connection!.GetTransmitSink();
-
-			await _nowPlaying.AudioStream.CopyToAsync(vnextSink);
+			vnextSink.VolumeModifier = 0.6;
+			
+			StartFFMPeg();
+			await _ffmpeg!.StandardOutput.BaseStream.CopyToAsync(vnextSink);
 		}
 		
 		public void Add(SilkMusicResult music) => _queue.Enqueue(music);

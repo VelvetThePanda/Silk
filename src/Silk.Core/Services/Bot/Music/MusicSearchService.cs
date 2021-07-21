@@ -12,7 +12,6 @@ using Silk.Extensions.DSharpPlus;
 using YoutubeExplode;
 using YoutubeExplode.Search;
 using YoutubeExplode.Videos;
-using YoutubeExplode.Videos.Streams;
 
 namespace Silk.Core.Services.Bot.Music
 {
@@ -62,11 +61,9 @@ namespace Silk.Core.Services.Bot.Music
 			var video = await _ytClient.Videos.GetAsync(VideoId.Parse(url));
 			var videoManifest = await _ytClient.Videos.Streams.GetManifestAsync(video.Id);
 		
-			var videoStream = videoManifest.GetAudioStreams().GetWithHighestBitrate();
-
-			var stream = await _ytClient.Videos.Streams.GetAsync(videoStream);
+			var audioStream = videoManifest.GetAudioOnlyStreams().FirstOrDefault(b => b.AudioCodec == "opus")!;
 			
-			return new() {Video = video, RequestedBy = requester, Duration = video.Duration.Value, AudioStream = stream};
+			return new() {Video = video, RequestedBy = requester, Duration = video.Duration.Value, AudioUrl = audioStream.Url};
 		}
 		
 		/// <summary>
@@ -109,7 +106,7 @@ namespace Silk.Core.Services.Bot.Music
 		private IEnumerable<Page> GeneratePagesFromSearch(IReadOnlyList<VideoSearchResult> results, DiscordUser user)
 		{
 			var pageOneResults = results.Take(5)
-				.Select((r, i) => $"{i + 1}: **{r.Title}** by {r.Author.Title}\n\tDuration: `{r.Duration.Value:h\\:mm\\:ss}`");
+				.Select((r, i) => $"{i + 1}: **[{r.Title}]({r.Url})** by {r.Author.Title}\n\tDuration: `{(r.Duration.HasValue ? r.Duration.Value.ToString("h\\:mm\\:ss") : "LIVE")}`");
 			var page1 = new DiscordEmbedBuilder()
 				.WithAuthor(user.Username, user.GetUrl(), user.AvatarUrl)
 				.WithColor(DiscordColor.Azure)
@@ -124,7 +121,7 @@ namespace Silk.Core.Services.Bot.Music
 			{
 				// +6 to account for the fact that we're skipping 5 results.
 				var pageTwoResults = results.Skip(5)
-					.Select((r, i) => $"{i + 6}: **{r.Title}** by {r.Author.Title}\n\tDuration: `{r.Duration.Value:h\\:mm\\:ss}`");
+					.Select((r, i) => $"{i + 6}: **[{r.Title}]({r.Url})** by {r.Author.Title}\n\tDuration: `{r.Duration.Value:h\\:mm\\:ss}`");
 
 				var page2 = new DiscordEmbedBuilder(page1.Build()).WithDescription(pageTwoResults.Join("\n"));
 
