@@ -47,7 +47,7 @@
         <PackageReference Include="AsyncEnumerator" Version="4.0.2"/>
         <PackageReference Include="Colorful.Console" Version="1.2.15"/>
         <PackageReference Include="CommandLineParser" Version="2.9.0-preview1"/>
-        <PackageReference Include="DSharpPlus" Version="4.1.0-nightly-00863"/>
+        <PackageReference Include="DSharpPlus" Version="4.1.0-nightly-00925"/>
         <PackageReference Include="DSharpPlus.CommandsNext" Version="4.1.0-nightly-00863"/>
         <PackageReference Include="DSharpPlus.Interactivity" Version="4.0.0"/>
         <PackageReference Include="DSharpPlus.VoiceNext" Version="4.1.0-nightly-00863"/>
