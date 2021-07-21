@@ -152,7 +152,7 @@ namespace Silk.Core
 
                 services.AddHttpClient(StringConstants.HttpClientName,
                     client => client.DefaultRequestHeaders.UserAgent.ParseAdd(
-                        $"Silk Project by VelvetThePanda / v{StringConstants.Version}"));
+                        $"Silk Project by VelvetThePanda & Contributors / v{StringConstants.Version}"));
                 
                 services.Replace(ServiceDescriptor.Singleton<IHttpMessageHandlerBuilderFilter, CustomLoggingFilter>());
 
