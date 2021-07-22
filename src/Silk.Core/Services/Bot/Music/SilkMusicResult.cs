@@ -11,6 +11,5 @@ namespace Silk.Core.Services.Bot.Music
 		public DiscordUser RequestedBy { get; init; }
 		public TimeSpan Duration { get; init; }
 		public Stream AudioStream { get; init; }
-		public string AudioUrl { get; init; }
 	}
 }

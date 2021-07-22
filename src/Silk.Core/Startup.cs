@@ -149,10 +149,15 @@ namespace Silk.Core
                 services.AddSingleton(new DiscordShardedClient(DiscordConfigurations.Discord));
 
                 services.AddMemoryCache(option => option.ExpirationScanFrequency = TimeSpan.FromSeconds(30));
-
+                
+                services.AddTransient<RetryHandler>();
+                
                 services.AddHttpClient(StringConstants.HttpClientName,
-                    client => client.DefaultRequestHeaders.UserAgent.ParseAdd(
-                        $"Silk Project by VelvetThePanda & Contributors / v{StringConstants.Version}"));
+                        client => client
+                            .DefaultRequestHeaders
+                            .UserAgent.ParseAdd($"Silk Project by VelvetThePanda and Contributors / v{StringConstants.Version}"))
+                    .AddHttpMessageHandler<RetryHandler>();
+                
                 
                 services.Replace(ServiceDescriptor.Singleton<IHttpMessageHandlerBuilderFilter, CustomLoggingFilter>());
 
@@ -163,9 +168,10 @@ namespace Silk.Core
                 #region Music
                 
                 // I have no idea if it's safe to pull HttpClient from the container. Oh well. //
-                services.AddSingleton(s => new YoutubeClient(s.Get<HttpClient>()!));
+                services.AddSingleton(s => new YoutubeClient(s.Get<IHttpClientFactory>()!.CreateSilkClient()!));
                 services.AddSingleton<MusicSearchService>();
                 services.AddSingleton<MusicVoiceService>();
+                
                 #endregion
                 
                 services.AddSingleton<ConfigService>();

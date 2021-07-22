@@ -100,7 +100,7 @@ namespace Silk.Core.Utilities.Bot
             TaskScheduler.UnobservedTaskException += async (_, e) => _logger.LogError("Task Scheduler caught an unobserved exception: {Exception}", e.Exception);
 
             IEnumerable<CommandsNextExtension?> commandsNext = (await _client.GetCommandsNextAsync()).Values;
-
+            
             foreach (CommandsNextExtension? c in commandsNext)
                 c!.CommandErrored += OnCommandErrored;
             _logger.LogDebug("Registered command exception-handler for {Shards} shard(s)", commandsNext.Count());

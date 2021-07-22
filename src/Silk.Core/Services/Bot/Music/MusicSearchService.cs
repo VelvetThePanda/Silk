@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using DSharpPlus;
 using DSharpPlus.Entities;
 using DSharpPlus.Interactivity;
 using DSharpPlus.Interactivity.Extensions;
+using Silk.Core.Utilities.HttpClient;
 using Silk.Extensions;
 using Silk.Extensions.DSharpPlus;
 using YoutubeExplode;
@@ -18,12 +21,15 @@ namespace Silk.Core.Services.Bot.Music
 	//TODO: Playlist support.
 	public sealed class MusicSearchService
 	{
+		private readonly HttpClient _htClient;
 		private readonly YoutubeClient _ytClient;
 		private readonly DiscordShardedClient _dcClient;
-		public MusicSearchService(YoutubeClient ytClient, DiscordShardedClient dcClient)
+		
+		public MusicSearchService(YoutubeClient ytClient, DiscordShardedClient dcClient, IHttpClientFactory htClient)
 		{
 			_ytClient = ytClient;
 			_dcClient = dcClient;
+			_htClient = htClient.CreateSilkClient();
 		}
 
 		/// <summary>
@@ -60,11 +66,14 @@ namespace Silk.Core.Services.Bot.Music
 		{
 			var video = await _ytClient.Videos.GetAsync(VideoId.Parse(url));
 			var videoManifest = await _ytClient.Videos.Streams.GetManifestAsync(video.Id);
-		
-			var audioStream = videoManifest.GetAudioOnlyStreams().FirstOrDefault(b => b.AudioCodec == "opus")!;
-			var stream = await _ytClient.Videos.Streams.GetAsync(audioStream);
 			
-			return new() {Video = video, RequestedBy = requester, Duration = video.Duration.Value, AudioStream = stream, AudioUrl = audioStream.Url};
+			var audioStream = videoManifest.GetAudioOnlyStreams().LastOrDefault(b => b.AudioCodec == "opus")!;
+			var content = (await _htClient.GetAsync(audioStream.Url, HttpCompletionOption.ResponseHeadersRead)).Content;
+
+			var s = new MemoryStream();
+			await content.CopyToAsync(s);
+			
+			return new() {Video = video, RequestedBy = requester, Duration = video.Duration.Value, AudioStream = s};
 		}
 		
 		/// <summary>
@@ -77,6 +86,12 @@ namespace Silk.Core.Services.Bot.Music
 		/// <returns>A new <see cref="SilkMusicResult"/>, or null if the prompt timed out.</returns>
 		public async Task<SilkMusicResult?> GetSelectionResultAsync(DiscordGuild guild, DiscordChannel channel, DiscordUser user, IReadOnlyList<VideoSearchResult> results)
 		{
+			if (!results.Any())
+			{
+				await channel.SendMessageAsync("Search yielded no results.");
+				return null;
+			}
+			
 			var interactivity = _dcClient.GetShard(guild).GetInteractivity();
 			var token = new CancellationTokenSource(TimeSpan.FromSeconds(45));
 			
